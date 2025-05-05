@@ -1,0 +1,20 @@
+name = "claude-cursor-sync"
+main = "src/index.ts"
+compatibility_date = "2024-04-01"
+
+[durable_objects]
+bindings = [
+  { name = "CLAUDE_CURSOR_SYNC", class_name = "ClaudeCursorSyncDO" }
+]
+
+[[migrations]]
+tag = "v1"
+new_classes = ["ClaudeCursorSyncDO"]
+
+# Add environment variables if needed
+[vars]
+DEBUG = "true"
+
+# Dev configuration
+[dev]
+port = 8787

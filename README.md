@@ -1,50 +1,134 @@
-# Building a Remote MCP Server on Cloudflare (Without Auth)
+# Claude-Cursor Sync Bridge
 
-This example allows you to deploy a remote MCP server that doesn't require authentication on Cloudflare Workers. 
+A Model Context Protocol (MCP) implementation that enables bidirectional synchronization between Claude Code and Cursor for collaborative coding projects. This bridge facilitates the exchange of tasks, code snippets, implementation details, and messages between Claude Code in a terminal and Cursor chat.
 
-## Get started: 
+## Features
 
-[![Deploy to Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/ai/tree/main/demos/remote-mcp-authless)
+- **Task Management**: Create, query, and update tasks with metadata
+- **Code Snippet Sharing**: Share code between Claude Code and Cursor
+- **Implementation Details**: Document approach and implementation status
+- **Messaging**: Send messages between clients for coordination
+- **Persistent Storage**: Store all data using Cloudflare Durable Objects
 
-This will deploy your MCP server to a URL like: `remote-mcp-server-authless.<your-account>.workers.dev/sse`
+## Architecture
 
-Alternatively, you can use the command line below to get the remote MCP Server created on your local machine:
-```bash
-npm create cloudflare@latest -- my-mcp-server --template=cloudflare/ai/demos/remote-mcp-authless
+The system consists of:
+
+1. **MCP Server**: Cloudflare Worker implementing MCP protocol
+2. **Task Manager**: Handles task CRUD operations
+3. **Code Sync Manager**: Manages code snippets and messaging
+4. **Durable Object**: Persistent storage for tasks, snippets, and messages
+
+## API Tools
+
+### Task Management
+
+- `task.create`: Create a new task with details
+- `task.query`: Query tasks based on filters
+- `task.status.update`: Update a task's status
+
+### Code & Implementation
+
+- `code.snippet`: Share code between clients
+- `implementation.details`: Document implementation approach and status
+
+### Communication
+
+- `message.broadcast`: Send messages between clients
+
+## Usage Examples
+
+### Claude Desktop
+
+Create a task:
+```
+<function_calls>
+<invoke name="task.create">
+<parameter name="clientId">claude-desktop</parameter>
+<parameter name="clientType">claude-code</parameter>
+<parameter name="title">Test Task from Claude Desktop</parameter>
+<parameter name="description">This is a test task created to verify the Claude-Cursor sync integration</parameter>
+<parameter name="status">pending</parameter>
+<parameter name="priority">high</parameter>
+</invoke>
+</function_calls>
 ```
 
-## Customizing your MCP Server
+Query tasks:
+```
+<function_calls>
+<invoke name="task.query">
+<parameter name="clientId">claude-desktop</parameter>
+<parameter name="clientType">claude-code</parameter>
+</invoke>
+</function_calls>
+```
 
-To add your own [tools](https://developers.cloudflare.com/agents/model-context-protocol/tools/) to the MCP server, define each tool inside the `init()` method of `src/index.ts` using `this.server.tool(...)`. 
+Share code:
+```
+<function_calls>
+<invoke name="code.snippet">
+<parameter name="clientId">claude-desktop</parameter>
+<parameter name="clientType">claude-code</parameter>
+<parameter name="code">console.log('Hello from Claude Desktop!');</parameter>
+<parameter name="language">javascript</parameter>
+<parameter name="fileName">test.js</parameter>
+<parameter name="description">A test snippet to verify sync</parameter>
+</invoke>
+</function_calls>
+```
 
-## Connect to Cloudflare AI Playground
+### Cursor
 
-You can connect to your MCP server from the Cloudflare AI Playground, which is a remote MCP client:
+In Cursor, you can use the MCP command palette (Cmd+Shift+P, then type "MCP" and select "Run MCP Tool") to access these same tools and verify the bidirectional syncing.
 
-1. Go to https://playground.ai.cloudflare.com/
-2. Enter your deployed MCP server URL (`remote-mcp-server-authless.<your-account>.workers.dev/sse`)
-3. You can now use your MCP tools directly from the playground!
+## Development
 
-## Connect Claude Desktop to your MCP server
+### Setup
 
-You can also connect to your remote MCP server from local MCP clients, by using the [mcp-remote proxy](https://www.npmjs.com/package/mcp-remote). 
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Generate Cloudflare Worker types: `npm run cf-typegen`
 
-To connect to your MCP server from Claude Desktop, follow [Anthropic's Quickstart](https://modelcontextprotocol.io/quickstart/user) and within Claude Desktop go to Settings > Developer > Edit Config.
+### Commands
 
-Update with this configuration:
+- `npm run dev`: Start local development server
+- `npm run deploy`: Deploy to Cloudflare Workers
+- `npm run format`: Format code with Biome
+- `npm run lint:fix`: Lint code with Biome
+
+## Connect to Cursor and Claude Desktop
+
+### Cursor
+
+In Cursor, you can configure the MCP integration in your Cursor settings:
+
+1. Open Cursor
+2. Go to Settings > MCP Configuration
+3. Add a new MCP server with URL `http://localhost:8787/sse` (for development) or your deployed Cloudflare Worker URL
+
+### Claude Desktop
+
+Configure Claude Desktop to connect to your MCP server:
+
+1. Open Claude Desktop
+2. Go to Settings > Developer > Edit Config
+3. Update with this configuration:
 
 ```json
 {
   "mcpServers": {
-    "calculator": {
+    "claudeCursorSync": {
       "command": "npx",
       "args": [
         "mcp-remote",
-        "http://localhost:8787/sse"  // or remote-mcp-server-authless.your-account.workers.dev/sse
+        "http://localhost:8787/sse"  // or your-worker.your-account.workers.dev/sse
       ]
     }
   }
 }
 ```
 
-Restart Claude and you should see the tools become available. 
+## License
+
+Copyright © 2024. All rights reserved.
