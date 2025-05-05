@@ -12,33 +12,334 @@ export interface Env {
     PHASE?: string;
 }
 
-// Keep the old MyMCP class for backward compatibility with existing Durable Objects
+// This class is kept for backward compatibility with existing Durable Objects
+// but now contains the full set of tools with underscore naming
 export class MyMCP extends McpAgent {
     server = new McpServer({
-        name: "Claude-Cursor Sync Bridge Legacy",
+        name: "Claude-Cursor Sync Bridge",
         version: "1.0.0",
     });
+    
+    taskManager = new TaskManager();
+    codeSyncManager = new CodeSyncManager();
 
     async init() {
-        console.log("Legacy MyMCP class initialized");
+        console.log("MyMCP class initialized with full toolset");
         
-        // Simple health check tool
+        // Set up all the standard tools with underscore naming
+        this.setupTools();
+    }
+    
+    // Helper method to set up all tools
+    setupTools() {
+        // Task creation tool
         this.server.tool(
-            "legacy_health",
-            {},
-            async () => {
-                return {
-                    content: [
-                        {
-                            type: "text",
-                            text: JSON.stringify({ 
-                                success: true, 
-                                message: "Legacy MyMCP is healthy",
-                                migrationStatus: "Please use ClaudeCursorSyncMCP for new functionality"
-                            })
-                        }
-                    ],
-                };
+            "task_create",
+            {
+                clientId: z.string(),
+                clientType: z.string(),
+                title: z.string(),
+                description: z.string(),
+                status: z.enum(["pending", "in-progress", "completed", "cancelled"]),
+                priority: z.enum(["high", "medium", "low"]),
+                assignedTo: z.string().optional(),
+                dueDate: z.string().optional(),
+                tags: z.array(z.string()).optional(),
+            },
+            async (params) => {
+                try {
+                    const client = clientSchema.parse({
+                        id: params.clientId,
+                        type: params.clientType
+                    });
+                    
+                    const task = await this.taskManager.createTask({
+                        ...params,
+                        client
+                    });
+                    
+                    return {
+                        content: [
+                            {
+                                type: "text",
+                                text: JSON.stringify({ 
+                                    success: true, 
+                                    message: "Task created successfully",
+                                    task
+                                })
+                            }
+                        ],
+                    };
+                } catch (error) {
+                    return {
+                        content: [
+                            {
+                                type: "text",
+                                text: JSON.stringify({ 
+                                    success: false, 
+                                    message: `Error creating task: ${error instanceof Error ? error.message : String(error)}`
+                                })
+                            }
+                        ],
+                    };
+                }
+            }
+        );
+
+        // Task query tool
+        this.server.tool(
+            "task_query",
+            {
+                clientId: z.string(),
+                clientType: z.string(),
+                status: z.enum(["pending", "in-progress", "completed", "cancelled"]).optional(),
+                priority: z.enum(["high", "medium", "low"]).optional(),
+                assignedTo: z.string().optional(),
+                tags: z.array(z.string()).optional(),
+            },
+            async (params) => {
+                try {
+                    const client = clientSchema.parse({
+                        id: params.clientId,
+                        type: params.clientType
+                    });
+                    
+                    const tasks = await this.taskManager.queryTasks({
+                        ...params,
+                        client
+                    });
+                    
+                    return {
+                        content: [
+                            {
+                                type: "text",
+                                text: JSON.stringify({ 
+                                    success: true, 
+                                    tasks
+                                })
+                            }
+                        ],
+                    };
+                } catch (error) {
+                    return {
+                        content: [
+                            {
+                                type: "text",
+                                text: JSON.stringify({ 
+                                    success: false, 
+                                    message: `Error querying tasks: ${error instanceof Error ? error.message : String(error)}`
+                                })
+                            }
+                        ],
+                    };
+                }
+            }
+        );
+
+        // Task status update tool
+        this.server.tool(
+            "task_status_update",
+            {
+                clientId: z.string(),
+                clientType: z.string(),
+                taskId: z.string(),
+                status: z.enum(["pending", "in-progress", "completed", "cancelled"]),
+            },
+            async (params) => {
+                try {
+                    const client = clientSchema.parse({
+                        id: params.clientId,
+                        type: params.clientType
+                    });
+                    
+                    const task = await this.taskManager.updateTaskStatus({
+                        taskId: params.taskId,
+                        status: params.status,
+                        client
+                    });
+                    
+                    return {
+                        content: [
+                            {
+                                type: "text",
+                                text: JSON.stringify({ 
+                                    success: true, 
+                                    message: "Task status updated successfully",
+                                    task
+                                })
+                            }
+                        ],
+                    };
+                } catch (error) {
+                    return {
+                        content: [
+                            {
+                                type: "text",
+                                text: JSON.stringify({ 
+                                    success: false, 
+                                    message: `Error updating task status: ${error instanceof Error ? error.message : String(error)}`
+                                })
+                            }
+                        ],
+                    };
+                }
+            }
+        );
+
+        // Code snippet sharing tool
+        this.server.tool(
+            "code_snippet",
+            {
+                clientId: z.string(),
+                clientType: z.string(),
+                code: z.string(),
+                language: z.string(),
+                fileName: z.string().optional(),
+                description: z.string().optional(),
+                context: z.string().optional(),
+                taskId: z.string().optional(),
+            },
+            async (params) => {
+                try {
+                    const client = clientSchema.parse({
+                        id: params.clientId,
+                        type: params.clientType
+                    });
+                    
+                    const snippet = await this.codeSyncManager.shareCodeSnippet({
+                        ...params,
+                        client
+                    });
+                    
+                    return {
+                        content: [
+                            {
+                                type: "text",
+                                text: JSON.stringify({ 
+                                    success: true, 
+                                    message: "Code snippet shared successfully",
+                                    snippet
+                                })
+                            }
+                        ],
+                    };
+                } catch (error) {
+                    return {
+                        content: [
+                            {
+                                type: "text",
+                                text: JSON.stringify({ 
+                                    success: false, 
+                                    message: `Error sharing code snippet: ${error instanceof Error ? error.message : String(error)}`
+                                })
+                            }
+                        ],
+                    };
+                }
+            }
+        );
+        
+        // Implementation details sharing tool
+        this.server.tool(
+            "implementation_details",
+            {
+                clientId: z.string(),
+                clientType: z.string(),
+                taskId: z.string(),
+                details: z.string(),
+                status: z.enum(["planning", "implemented", "needs-review"]),
+            },
+            async (params) => {
+                try {
+                    const client = clientSchema.parse({
+                        id: params.clientId,
+                        type: params.clientType
+                    });
+                    
+                    const details = await this.taskManager.addImplementationDetails({
+                        taskId: params.taskId,
+                        details: params.details,
+                        status: params.status,
+                        client
+                    });
+                    
+                    return {
+                        content: [
+                            {
+                                type: "text",
+                                text: JSON.stringify({ 
+                                    success: true, 
+                                    message: "Implementation details added successfully",
+                                    details
+                                })
+                            }
+                        ],
+                    };
+                } catch (error) {
+                    return {
+                        content: [
+                            {
+                                type: "text",
+                                text: JSON.stringify({ 
+                                    success: false, 
+                                    message: `Error adding implementation details: ${error instanceof Error ? error.message : String(error)}`
+                                })
+                            }
+                        ],
+                    };
+                }
+            }
+        );
+        
+        // Message broadcast tool
+        this.server.tool(
+            "message_broadcast",
+            {
+                clientId: z.string(),
+                clientType: z.string(),
+                message: z.string(),
+                targetClientId: z.string().optional(),
+                targetClientType: z.string().optional(),
+                taskId: z.string().optional(),
+            },
+            async (params) => {
+                try {
+                    const client = clientSchema.parse({
+                        id: params.clientId,
+                        type: params.clientType
+                    });
+                    
+                    // Using a combination of task manager and code sync manager for messaging
+                    const result = await this.codeSyncManager.broadcastMessage({
+                        ...params,
+                        client
+                    });
+                    
+                    return {
+                        content: [
+                            {
+                                type: "text",
+                                text: JSON.stringify({ 
+                                    success: true, 
+                                    message: "Message broadcast successfully",
+                                    result
+                                })
+                            }
+                        ],
+                    };
+                } catch (error) {
+                    return {
+                        content: [
+                            {
+                                type: "text",
+                                text: JSON.stringify({ 
+                                    success: false, 
+                                    message: `Error broadcasting message: ${error instanceof Error ? error.message : String(error)}`
+                                })
+                            }
+                        ],
+                    };
+                }
             }
         );
     }

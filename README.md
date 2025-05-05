@@ -151,15 +151,21 @@ In Cursor, you can use the MCP command palette (Cmd+Shift+P, then type "MCP" and
 
 ## Connect to Cursor and Claude Desktop
 
-### Cursor
+### Cursor MCP Configuration
 
-In Cursor, you can configure the MCP integration in your Cursor settings:
+The Claude-Cursor Sync Bridge is already configured in your Cursor MCP settings:
 
-1. Open Cursor
-2. Go to Settings > MCP Configuration
-3. Add a new MCP server with URL:
-   - Phase 1: `https://claude-cursor-sync.half-dozen.workers.dev/sse/legacy`
-   - Phase 2: `https://claude-cursor-sync.half-dozen.workers.dev/sse`
+```json
+"claudeCursorSync": {
+  "url": "https://claude-cursor-sync.half-dozen.workers.dev/sse",
+  "auth": {
+    "type": "none"
+  },
+  "method": "GET"
+}
+```
+
+You can update this configuration by editing `~/.cursor/mcp.json` if needed.
 
 ### Claude Desktop
 
@@ -176,7 +182,7 @@ Configure Claude Desktop to connect to your MCP server:
       "command": "npx",
       "args": [
         "mcp-remote",
-        "https://claude-cursor-sync.half-dozen.workers.dev/sse"  // or /sse/legacy for Phase 1
+        "https://claude-cursor-sync.half-dozen.workers.dev/sse"
       ]
     }
   }
