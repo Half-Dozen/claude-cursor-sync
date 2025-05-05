@@ -23,8 +23,16 @@
 			{
 				"class_name": "MyMCP",
 				"name": "MCP_OBJECT"
+			},
+			{
+				"class_name": "ClaudeCursorSyncDO",
+				"name": "CLAUDE_CURSOR_SYNC"
 			}
 		]
+	},
+	"vars": {
+		"DEBUG": "true",
+		"PHASE": "2"
 	},
 	"observability": {
 		"enabled": true

@@ -7,9 +7,9 @@ import { clientSchema } from "./schemas";
 
 export interface Env {
     MCP_OBJECT: DurableObjectNamespace;
-    // CLAUDE_CURSOR_SYNC is commented out for initial deployment
-    // We'll uncomment this after the migration is applied
-    // CLAUDE_CURSOR_SYNC: DurableObjectNamespace;
+    CLAUDE_CURSOR_SYNC: DurableObjectNamespace;
+    DEBUG?: string;
+    PHASE?: string;
 }
 
 // Keep the old MyMCP class for backward compatibility with existing Durable Objects
@@ -486,45 +486,53 @@ export class ClaudeCursorSyncDO {
 export default {
     fetch(request: Request, env: Env, ctx: ExecutionContext) {
         const url = new URL(request.url);
+        const phase = env.PHASE || "1";
+        const isDebug = env.DEBUG === "true";
 
-        // Handle legacy MyMCP requests - this is the only one active for now
+        // Handle legacy MyMCP requests
         if (url.pathname === "/sse/legacy" || url.pathname === "/sse/message/legacy") {
+            if (isDebug) console.log("Serving legacy SSE request");
             // @ts-ignore - Types might not match exactly but this works with MCP
             return MyMCP.serveSSE("/sse/legacy").fetch(request, env, ctx);
         }
 
         if (url.pathname === "/mcp/legacy") {
+            if (isDebug) console.log("Serving legacy MCP request");
             // @ts-ignore - Types might not match exactly but this works with MCP
             return MyMCP.serve("/mcp/legacy").fetch(request, env, ctx);
         }
         
-        // Handle new ClaudeCursorSyncMCP requests - these will be enabled in Phase 2
+        // Handle new ClaudeCursorSyncMCP requests - fully enabled in Phase 2
         if (url.pathname === "/sse" || url.pathname === "/sse/message") {
-            // Return temporary message until we enable the new endpoints
-            return new Response(JSON.stringify({
-                status: "pending",
-                message: "The new Claude-Cursor Sync Bridge endpoints are coming soon. Please use /sse/legacy and /mcp/legacy for now."
-            }), {
-                headers: { "Content-Type": "application/json" }
-            });
-            
-            // This will be uncommented in Phase 2
-            // @ts-ignore - Types might not match exactly but this works with MCP
-            // return ClaudeCursorSyncMCP.serveSSE("/sse").fetch(request, env, ctx);
+            if (phase === "2") {
+                if (isDebug) console.log("Serving new SSE request in Phase 2");
+                // @ts-ignore - Types might not match exactly but this works with MCP
+                return ClaudeCursorSyncMCP.serveSSE("/sse").fetch(request, env, ctx);
+            } else {
+                // Return temporary message if still in Phase 1
+                return new Response(JSON.stringify({
+                    status: "pending",
+                    message: "The new Claude-Cursor Sync Bridge endpoints are coming soon. Please use /sse/legacy and /mcp/legacy for now."
+                }), {
+                    headers: { "Content-Type": "application/json" }
+                });
+            }
         }
 
         if (url.pathname === "/mcp") {
-            // Return temporary message until we enable the new endpoints
-            return new Response(JSON.stringify({
-                status: "pending",
-                message: "The new Claude-Cursor Sync Bridge endpoints are coming soon. Please use /sse/legacy and /mcp/legacy for now."
-            }), {
-                headers: { "Content-Type": "application/json" }
-            });
-            
-            // This will be uncommented in Phase 2
-            // @ts-ignore - Types might not match exactly but this works with MCP
-            // return ClaudeCursorSyncMCP.serve("/mcp").fetch(request, env, ctx);
+            if (phase === "2") {
+                if (isDebug) console.log("Serving new MCP request in Phase 2");
+                // @ts-ignore - Types might not match exactly but this works with MCP
+                return ClaudeCursorSyncMCP.serve("/mcp").fetch(request, env, ctx);
+            } else {
+                // Return temporary message if still in Phase 1
+                return new Response(JSON.stringify({
+                    status: "pending",
+                    message: "The new Claude-Cursor Sync Bridge endpoints are coming soon. Please use /sse/legacy and /mcp/legacy for now."
+                }), {
+                    headers: { "Content-Type": "application/json" }
+                });
+            }
         }
 
         // Add a simple health check
@@ -533,7 +541,11 @@ export default {
                 status: "ok",
                 version: "1.0.0",
                 name: "Claude-Cursor Sync Bridge",
-                phase: "1 - Migration in Progress"
+                phase: phase,
+                endpoints: {
+                    legacy: ["/mcp/legacy", "/sse/legacy"],
+                    current: phase === "2" ? ["/mcp", "/sse"] : "coming soon"
+                }
             }), {
                 headers: {
                     "Content-Type": "application/json"

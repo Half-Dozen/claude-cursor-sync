@@ -10,6 +10,22 @@ A Model Context Protocol (MCP) implementation that enables bidirectional synchro
 - **Messaging**: Send messages between clients for coordination
 - **Persistent Storage**: Store all data using Cloudflare Durable Objects
 
+## Deployment Status
+
+The Claude-Cursor Sync Bridge is deployed using a phased approach:
+
+### Phase 1 (Legacy Mode)
+- Legacy endpoints: `/mcp/legacy` and `/sse/legacy` 
+- Uses the `MyMCP` Durable Object class
+- Minimal functionality focused on backward compatibility
+
+### Phase 2 (Full Functionality)
+- Modern endpoints: `/mcp` and `/sse`
+- Uses the `ClaudeCursorSyncDO` Durable Object class
+- Complete feature set with task management, code sharing, and messaging
+
+You can check the current deployment phase at the `/health` endpoint.
+
 ## Architecture
 
 The system consists of:
@@ -35,6 +51,17 @@ The system consists of:
 ### Communication
 
 - `message.broadcast`: Send messages between clients
+
+## Endpoints
+
+- **Phase 1 (Legacy)**: 
+  - `/mcp/legacy`: MCP Server endpoint for legacy clients
+  - `/sse/legacy`: SSE endpoint for legacy clients
+
+- **Phase 2 (Modern)**:
+  - `/mcp`: MCP Server endpoint
+  - `/sse`: SSE endpoint
+  - `/health`: Health check endpoint with version and status information
 
 ## Usage Examples
 
@@ -78,6 +105,31 @@ Share code:
 </function_calls>
 ```
 
+Add implementation details:
+```
+<function_calls>
+<invoke name="implementation.details">
+<parameter name="clientId">claude-desktop</parameter>
+<parameter name="clientType">claude-code</parameter>
+<parameter name="taskId">123e4567-e89b-12d3-a456-426614174000</parameter>
+<parameter name="details">The implementation will use a factory pattern to create the objects needed.</parameter>
+<parameter name="status">planning</parameter>
+</invoke>
+</function_calls>
+```
+
+Broadcast a message:
+```
+<function_calls>
+<invoke name="message.broadcast">
+<parameter name="clientId">claude-desktop</parameter>
+<parameter name="clientType">claude-code</parameter>
+<parameter name="message">I've started implementing the feature and have a question about the API design.</parameter>
+<parameter name="taskId">123e4567-e89b-12d3-a456-426614174000</parameter>
+</invoke>
+</function_calls>
+```
+
 ### Cursor
 
 In Cursor, you can use the MCP command palette (Cmd+Shift+P, then type "MCP" and select "Run MCP Tool") to access these same tools and verify the bidirectional syncing.
@@ -105,7 +157,9 @@ In Cursor, you can configure the MCP integration in your Cursor settings:
 
 1. Open Cursor
 2. Go to Settings > MCP Configuration
-3. Add a new MCP server with URL `http://localhost:8787/sse` (for development) or your deployed Cloudflare Worker URL
+3. Add a new MCP server with URL:
+   - Phase 1: `https://claude-cursor-sync.half-dozen.workers.dev/sse/legacy`
+   - Phase 2: `https://claude-cursor-sync.half-dozen.workers.dev/sse`
 
 ### Claude Desktop
 
@@ -122,7 +176,7 @@ Configure Claude Desktop to connect to your MCP server:
       "command": "npx",
       "args": [
         "mcp-remote",
-        "http://localhost:8787/sse"  // or your-worker.your-account.workers.dev/sse
+        "https://claude-cursor-sync.half-dozen.workers.dev/sse"  // or /sse/legacy for Phase 1
       ]
     }
   }
