@@ -7,6 +7,39 @@ import { clientSchema } from "./schemas";
 
 export interface Env {
     CLAUDE_CURSOR_SYNC: DurableObjectNamespace;
+    MCP_OBJECT: DurableObjectNamespace;
+}
+
+// Keep the old MyMCP class for backward compatibility with existing Durable Objects
+export class MyMCP extends McpAgent {
+    server = new McpServer({
+        name: "Claude-Cursor Sync Bridge Legacy",
+        version: "1.0.0",
+    });
+
+    async init() {
+        console.log("Legacy MyMCP class initialized");
+        
+        // Simple health check tool
+        this.server.tool(
+            "legacy.health",
+            {},
+            async () => {
+                return {
+                    content: [
+                        {
+                            type: "text",
+                            text: JSON.stringify({ 
+                                success: true, 
+                                message: "Legacy MyMCP is healthy",
+                                migrationStatus: "Please use ClaudeCursorSyncMCP for new functionality"
+                            })
+                        }
+                    ],
+                };
+            }
+        );
+    }
 }
 
 // Define our MCP agent with tools
@@ -452,6 +485,18 @@ export default {
     fetch(request: Request, env: Env, ctx: ExecutionContext) {
         const url = new URL(request.url);
 
+        // Handle legacy MyMCP requests
+        if (url.pathname === "/sse/legacy" || url.pathname === "/sse/message/legacy") {
+            // @ts-ignore - Types might not match exactly but this works with MCP
+            return MyMCP.serveSSE("/sse/legacy").fetch(request, env, ctx);
+        }
+
+        if (url.pathname === "/mcp/legacy") {
+            // @ts-ignore - Types might not match exactly but this works with MCP
+            return MyMCP.serve("/mcp/legacy").fetch(request, env, ctx);
+        }
+        
+        // Handle new ClaudeCursorSyncMCP requests
         if (url.pathname === "/sse" || url.pathname === "/sse/message") {
             // @ts-ignore - Types might not match exactly but this works with MCP
             return ClaudeCursorSyncMCP.serveSSE("/sse").fetch(request, env, ctx);

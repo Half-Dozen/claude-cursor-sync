@@ -5,13 +5,13 @@ compatibility_flags = ["nodejs_compat"]
 
 [durable_objects]
 bindings = [
-  { name = "CLAUDE_CURSOR_SYNC", class_name = "ClaudeCursorSyncDO" }
+  { name = "CLAUDE_CURSOR_SYNC", class_name = "ClaudeCursorSyncDO" },
+  { name = "MCP_OBJECT", class_name = "MyMCP" }
 ]
 
 [[migrations]]
 tag = "v1"
-new_classes = ["ClaudeCursorSyncDO"]
-renamed_classes = [{ from = "MyMCP", to = "ClaudeCursorSyncDO" }]
+new_classes = ["ClaudeCursorSyncDO", "MyMCP"]
 
 # Add environment variables if needed
 [vars]
