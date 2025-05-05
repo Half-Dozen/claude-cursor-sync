@@ -24,7 +24,7 @@ export class MyMCP extends McpAgent {
         
         // Simple health check tool
         this.server.tool(
-            "legacy.health",
+            "legacy_health",
             {},
             async () => {
                 return {
@@ -57,7 +57,7 @@ export class ClaudeCursorSyncMCP extends McpAgent {
     async init() {
         // Task creation tool
         this.server.tool(
-            "task.create",
+            "task_create",
             {
                 clientId: z.string(),
                 clientType: z.string(),
@@ -111,7 +111,7 @@ export class ClaudeCursorSyncMCP extends McpAgent {
 
         // Task query tool
         this.server.tool(
-            "task.query",
+            "task_query",
             {
                 clientId: z.string(),
                 clientType: z.string(),
@@ -161,7 +161,7 @@ export class ClaudeCursorSyncMCP extends McpAgent {
 
         // Task status update tool
         this.server.tool(
-            "task.status.update",
+            "task_status_update",
             {
                 clientId: z.string(),
                 clientType: z.string(),
@@ -211,7 +211,7 @@ export class ClaudeCursorSyncMCP extends McpAgent {
 
         // Code snippet sharing tool
         this.server.tool(
-            "code.snippet",
+            "code_snippet",
             {
                 clientId: z.string(),
                 clientType: z.string(),
@@ -264,7 +264,7 @@ export class ClaudeCursorSyncMCP extends McpAgent {
         
         // Implementation details sharing tool
         this.server.tool(
-            "implementation.details",
+            "implementation_details",
             {
                 clientId: z.string(),
                 clientType: z.string(),
@@ -316,7 +316,7 @@ export class ClaudeCursorSyncMCP extends McpAgent {
         
         // Message broadcast tool
         this.server.tool(
-            "message.broadcast",
+            "message_broadcast",
             {
                 clientId: z.string(),
                 clientType: z.string(),

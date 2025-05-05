@@ -39,18 +39,18 @@ The system consists of:
 
 ### Task Management
 
-- `task.create`: Create a new task with details
-- `task.query`: Query tasks based on filters
-- `task.status.update`: Update a task's status
+- `task_create`: Create a new task with details
+- `task_query`: Query tasks based on filters
+- `task_status_update`: Update a task's status
 
 ### Code & Implementation
 
-- `code.snippet`: Share code between clients
-- `implementation.details`: Document implementation approach and status
+- `code_snippet`: Share code between clients
+- `implementation_details`: Document implementation approach and status
 
 ### Communication
 
-- `message.broadcast`: Send messages between clients
+- `message_broadcast`: Send messages between clients
 
 ## Endpoints
 
@@ -70,7 +70,7 @@ The system consists of:
 Create a task:
 ```
 <function_calls>
-<invoke name="task.create">
+<invoke name="task_create">
 <parameter name="clientId">claude-desktop</parameter>
 <parameter name="clientType">claude-code</parameter>
 <parameter name="title">Test Task from Claude Desktop</parameter>
@@ -84,7 +84,7 @@ Create a task:
 Query tasks:
 ```
 <function_calls>
-<invoke name="task.query">
+<invoke name="task_query">
 <parameter name="clientId">claude-desktop</parameter>
 <parameter name="clientType">claude-code</parameter>
 </invoke>
@@ -94,7 +94,7 @@ Query tasks:
 Share code:
 ```
 <function_calls>
-<invoke name="code.snippet">
+<invoke name="code_snippet">
 <parameter name="clientId">claude-desktop</parameter>
 <parameter name="clientType">claude-code</parameter>
 <parameter name="code">console.log('Hello from Claude Desktop!');</parameter>
@@ -108,7 +108,7 @@ Share code:
 Add implementation details:
 ```
 <function_calls>
-<invoke name="implementation.details">
+<invoke name="implementation_details">
 <parameter name="clientId">claude-desktop</parameter>
 <parameter name="clientType">claude-code</parameter>
 <parameter name="taskId">123e4567-e89b-12d3-a456-426614174000</parameter>
@@ -121,7 +121,7 @@ Add implementation details:
 Broadcast a message:
 ```
 <function_calls>
-<invoke name="message.broadcast">
+<invoke name="message_broadcast">
 <parameter name="clientId">claude-desktop</parameter>
 <parameter name="clientType">claude-code</parameter>
 <parameter name="message">I've started implementing the feature and have a question about the API design.</parameter>
