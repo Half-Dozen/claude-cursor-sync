@@ -1,6 +1,7 @@
 name = "claude-cursor-sync"
 main = "src/index.ts"
 compatibility_date = "2024-04-01"
+compatibility_flags = ["nodejs_compat"]
 
 [durable_objects]
 bindings = [
@@ -10,6 +11,7 @@ bindings = [
 [[migrations]]
 tag = "v1"
 new_classes = ["ClaudeCursorSyncDO"]
+renamed_classes = [{ from = "MyMCP", to = "ClaudeCursorSyncDO" }]
 
 # Add environment variables if needed
 [vars]
@@ -18,3 +20,6 @@ DEBUG = "true"
 # Dev configuration
 [dev]
 port = 8787
+
+[observability]
+enabled = true

@@ -10,8 +10,9 @@
 	"compatibility_flags": ["nodejs_compat"],
 	"migrations": [
 		{
+			"tag": "v1",
 			"new_classes": ["ClaudeCursorSyncDO"],
-			"tag": "v1"
+			"renamed_classes": [{ "from": "MyMCP", "to": "ClaudeCursorSyncDO" }]
 		}
 	],
 	"durable_objects": {
