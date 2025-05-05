@@ -333,37 +333,6 @@ export class ClaudeCursorSyncMCP extends McpAgent {
     }
 }
 
-export default {
-    fetch(request: Request, env: Env, ctx: ExecutionContext) {
-        const url = new URL(request.url);
-
-        if (url.pathname === "/sse" || url.pathname === "/sse/message") {
-            // @ts-ignore - Types might not match exactly but this works with MCP
-            return ClaudeCursorSyncMCP.serveSSE("/sse").fetch(request, env, ctx);
-        }
-
-        if (url.pathname === "/mcp") {
-            // @ts-ignore - Types might not match exactly but this works with MCP
-            return ClaudeCursorSyncMCP.serve("/mcp").fetch(request, env, ctx);
-        }
-
-        // Add a simple health check
-        if (url.pathname === "/health") {
-            return new Response(JSON.stringify({
-                status: "ok",
-                version: "1.0.0",
-                name: "Claude-Cursor Sync Bridge"
-            }), {
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            });
-        }
-
-        return new Response("Not found", { status: 404 });
-    },
-};
-
 // Durable Object Implementation for data persistence
 export class ClaudeCursorSyncDO {
     state: DurableObjectState;
@@ -478,3 +447,34 @@ export class ClaudeCursorSyncDO {
         return new Response("Not found", { status: 404 });
     }
 }
+
+export default {
+    fetch(request: Request, env: Env, ctx: ExecutionContext) {
+        const url = new URL(request.url);
+
+        if (url.pathname === "/sse" || url.pathname === "/sse/message") {
+            // @ts-ignore - Types might not match exactly but this works with MCP
+            return ClaudeCursorSyncMCP.serveSSE("/sse").fetch(request, env, ctx);
+        }
+
+        if (url.pathname === "/mcp") {
+            // @ts-ignore - Types might not match exactly but this works with MCP
+            return ClaudeCursorSyncMCP.serve("/mcp").fetch(request, env, ctx);
+        }
+
+        // Add a simple health check
+        if (url.pathname === "/health") {
+            return new Response(JSON.stringify({
+                status: "ok",
+                version: "1.0.0",
+                name: "Claude-Cursor Sync Bridge"
+            }), {
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
+        }
+
+        return new Response("Not found", { status: 404 });
+    },
+};

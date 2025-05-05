@@ -10,15 +10,15 @@
 	"compatibility_flags": ["nodejs_compat"],
 	"migrations": [
 		{
-			"new_sqlite_classes": ["MyMCP"],
+			"new_classes": ["ClaudeCursorSyncDO"],
 			"tag": "v1"
 		}
 	],
 	"durable_objects": {
 		"bindings": [
 			{
-				"class_name": "MyMCP",
-				"name": "MCP_OBJECT"
+				"class_name": "ClaudeCursorSyncDO",
+				"name": "CLAUDE_CURSOR_SYNC"
 			}
 		]
 	},
