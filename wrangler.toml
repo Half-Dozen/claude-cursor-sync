@@ -3,15 +3,21 @@ main = "src/index.ts"
 compatibility_date = "2024-04-01"
 compatibility_flags = ["nodejs_compat"]
 
+# Only bind the MyMCP class for now - we'll add ClaudeCursorSyncDO binding after migration
 [durable_objects]
 bindings = [
-  { name = "CLAUDE_CURSOR_SYNC", class_name = "ClaudeCursorSyncDO" },
   { name = "MCP_OBJECT", class_name = "MyMCP" }
 ]
 
+# Add a migration to add the new ClaudeCursorSyncDO class
 [[migrations]]
-tag = "v1"
-new_classes = ["ClaudeCursorSyncDO", "MyMCP"]
+tag = "v1" 
+new_classes = ["MyMCP"]
+
+# Add a separate migration tag for the new class
+[[migrations]]
+tag = "v2"
+new_classes = ["ClaudeCursorSyncDO"]
 
 # Add environment variables if needed
 [vars]

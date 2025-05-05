@@ -11,15 +11,18 @@
 	"migrations": [
 		{
 			"tag": "v1",
-			"new_classes": ["ClaudeCursorSyncDO"],
-			"renamed_classes": [{ "from": "MyMCP", "to": "ClaudeCursorSyncDO" }]
+			"new_classes": ["MyMCP"]
+		},
+		{
+			"tag": "v2",
+			"new_classes": ["ClaudeCursorSyncDO"]
 		}
 	],
 	"durable_objects": {
 		"bindings": [
 			{
-				"class_name": "ClaudeCursorSyncDO",
-				"name": "CLAUDE_CURSOR_SYNC"
+				"class_name": "MyMCP",
+				"name": "MCP_OBJECT"
 			}
 		]
 	},
